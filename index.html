@@ -1,0 +1,2243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Originación SOFOM | Seguimiento Comercial Gobierno</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              850: '#10243e',
+              900: '#0a192f',
+              950: '#06101f',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Estilos personalizados para barras de desplazamiento limpias */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .kanban-col {
+      min-height: calc(100vh - 380px);
+    }
+    /* Animación suave para modales */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-modal {
+      animation: fadeIn 0.18s ease-out forwards;
+    }
+    /* Padding inferior para que la barra de pestañas fija no tape contenido */
+    body {
+      padding-bottom: 76px;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased selection:bg-emerald-100 selection:text-emerald-900">
+
+  <!-- Barra de Navegación Superior -->
+  <header class="bg-navy-900 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <!-- Marca / Título -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
+          <i class="fa-solid fa-landmark text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-base sm:text-lg tracking-tight leading-none">SOFOM <span class="text-emerald-400 font-semibold" id="header-area-label">Negocios</span></h1>
+            <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+              Proveedores Gobierno
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block mt-0.5" id="header-area-sub">Originación Comercial · PEMEX · CFE · SICT · IMSS</p>
+        </div>
+      </div>
+
+      <!-- Acciones Globales -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button onclick="exportCSV()" title="Descargar reporte en Excel/CSV" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">
+          <i class="fa-solid fa-file-csv text-emerald-400"></i>
+          <span class="hidden sm:inline">Exportar CSV</span>
+        </button>
+
+        <button onclick="confirmResetData()" title="Restaurar datos de demostración" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer">
+          <i class="fa-solid fa-rotate-left text-slate-400"></i>
+          <span class="hidden md:inline">Ejemplos</span>
+        </button>
+
+        <button onclick="openNewProspectModal()" class="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-950 transition cursor-pointer">
+          <i class="fa-solid fa-plus"></i>
+          <span>Nuevo Prospecto</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- PESTAÑA 1: ÁREA DE NEGOCIOS (ORIGINACIÓN Y SEGUIMIENTO COMERCIAL)     -->
+  <!-- ===================================================================== -->
+  <main id="tab-panel-negocios" class="area-panel max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Tarjetas de KPIs en Tiempo Real -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-container">
+      <!-- KPI 1: Pipeline Total -->
+      <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Pipeline Activo (Etapas 1-4)</p>
+          <p class="text-xl sm:text-2xl font-bold text-slate-900 mt-1" id="kpi-pipeline">$0</p>
+          <p class="text-xs text-slate-500 mt-1" id="kpi-pipeline-sub">0 operaciones en gestión</p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-chart-line text-lg"></i>
+        </div>
+      </div>
+
+      <!-- KPI 2: En Comité de Crédito -->
+      <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">En Comité de Crédito</p>
+          <p class="text-xl sm:text-2xl font-bold text-amber-600 mt-1" id="kpi-comite">$0</p>
+          <p class="text-xs text-slate-500 mt-1" id="kpi-comite-sub">0 expedientes dictaminándose</p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-scale-balanced text-lg"></i>
+        </div>
+      </div>
+
+      <!-- KPI 3: Autorizado / Dispersado -->
+      <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Autorizado / Dispersado</p>
+          <p class="text-xl sm:text-2xl font-bold text-emerald-600 mt-1" id="kpi-dispersado">$0</p>
+          <p class="text-xs text-slate-500 mt-1" id="kpi-dispersado-sub">0 líneas colocadas</p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-circle-check text-lg"></i>
+        </div>
+      </div>
+
+      <!-- KPI 4: Alertas de Seguimiento -->
+      <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Seguimientos Hoy / Vencidos</p>
+          <p class="text-xl sm:text-2xl font-bold text-rose-600 mt-1" id="kpi-alertas">0</p>
+          <p class="text-xs text-slate-500 mt-1" id="kpi-alertas-sub">Requieren contacto inmediato</p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-bell text-lg"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Barra de Filtros, Buscador y Selector de Vista -->
+    <section class="bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <!-- Buscador y Filtro de Dependencia -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+        <!-- Input Búsqueda -->
+        <div class="relative flex-1 max-w-md">
+          <i class="fa-solid fa-magnifying-glass text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 text-xs"></i>
+          <input type="text" id="searchInput" oninput="renderApp()" placeholder="Buscar razón social, RFC, contrato o contacto..."
+            class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition">
+        </div>
+
+        <!-- Filtro Rápido por Dependencia -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0" id="dep-filters">
+          <button onclick="setDepFilter('TODAS')" data-dep="TODAS" class="dep-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-navy-900 text-white transition cursor-pointer shrink-0">Todas</button>
+          <button onclick="setDepFilter('PEMEX')" data-dep="PEMEX" class="dep-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer shrink-0">PEMEX</button>
+          <button onclick="setDepFilter('CFE')" data-dep="CFE" class="dep-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer shrink-0">CFE</button>
+          <button onclick="setDepFilter('SICT')" data-dep="SICT" class="dep-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer shrink-0">SICT</button>
+          <button onclick="setDepFilter('IMSS')" data-dep="IMSS" class="dep-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer shrink-0">IMSS</button>
+          <button onclick="setDepFilter('OTRO')" data-dep="OTRO" class="dep-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer shrink-0">Otras</button>
+        </div>
+      </div>
+
+      <!-- Filtro solo alertas + Switch Kanban / Tabla -->
+      <div class="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 pt-2.5 sm:pt-0 border-slate-100">
+        <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none">
+          <input type="checkbox" id="onlyAlertsCheck" onchange="renderApp()" class="rounded border-slate-300 text-rose-600 focus:ring-rose-500">
+          <span>Solo urgentes / hoy</span>
+        </label>
+
+        <div class="bg-slate-100 p-1 rounded-lg inline-flex items-center border border-slate-200/70">
+          <button id="btn-view-kanban" onclick="switchView('kanban')" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-white text-navy-900 shadow-sm flex items-center gap-1.5 transition cursor-pointer">
+            <i class="fa-solid fa-table-columns"></i>
+            <span>Tablero</span>
+          </button>
+          <button id="btn-view-table" onclick="switchView('table')" class="px-3 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition cursor-pointer">
+            <i class="fa-solid fa-list"></i>
+            <span>Lista</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 1: TABLERO KANBAN -->
+    <section id="view-kanban" class="overflow-x-auto pb-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 min-w-[300px] xl:min-w-[1250px]" id="kanban-board">
+        <!-- Las columnas se generan dinámicamente con JS -->
+      </div>
+    </section>
+
+    <!-- VISTA 2: TABLA DETALLADA -->
+    <section id="view-table" class="hidden bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              <th class="py-3.5 px-4">Empresa / RFC</th>
+              <th class="py-3.5 px-4">Dependencia / Contrato</th>
+              <th class="py-3.5 px-4">Producto y Monto</th>
+              <th class="py-3.5 px-4">Etapa Actual</th>
+              <th class="py-3.5 px-4">Expediente KYC</th>
+              <th class="py-3.5 px-4">Próximo Seguimiento</th>
+              <th class="py-3.5 px-4 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
+            <!-- Filas generadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+      <div id="table-empty" class="hidden py-12 text-center text-slate-500 text-sm">
+        No se encontraron prospectos con los filtros seleccionados.
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- PESTAÑA 2: ÁREA DE FLUJOS (TESORERÍA, DISPERSIONES Y COBRANZA)        -->
+  <!-- ===================================================================== -->
+  <main id="tab-panel-flujos" class="area-panel hidden max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- KPIs de Tesorería / Flujos -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Por Fondear / Programado</p>
+          <p class="text-xl sm:text-2xl font-bold text-blue-700 mt-1" id="flujos-kpi-fondear">$0</p>
+          <p class="text-xs text-slate-500 mt-1" id="flujos-kpi-fondear-sub">0 dispersiones pendientes</p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-money-bill-transfer text-lg"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Cartera Dispersada Activa</p>
+          <p class="text-xl sm:text-2xl font-bold text-navy-900 mt-1" id="flujos-kpi-activa">$0</p>
+          <p class="text-xs text-slate-500 mt-1" id="flujos-kpi-activa-sub">Capital colocado en dependencias</p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-slate-100 text-navy-900 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-vault text-lg"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">En Gestión Cobro (COPADE)</p>
+          <p class="text-xl sm:text-2xl font-bold text-amber-600 mt-1" id="flujos-kpi-cobro">$0</p>
+          <p class="text-xs text-slate-500 mt-1" id="flujos-kpi-cobro-sub">0 facturas en trámite de pago</p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-hourglass-half text-lg"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Recuperado / Liquidado</p>
+          <p class="text-xl sm:text-2xl font-bold text-emerald-600 mt-1" id="flujos-kpi-liquidado">$0</p>
+          <p class="text-xs text-slate-500 mt-1" id="flujos-kpi-liquidado-sub">0 operaciones cerradas</p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-sack-dollar text-lg"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Barra de filtro de estatus de Flujo -->
+    <section class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h2 class="text-sm font-bold text-navy-900">Control de Tesorería, Dispersiones y Retorno de Flujos</h2>
+        <p class="text-xs text-slate-500">Monitorea fechas compromiso de dispersión al proveedor y fechas estimadas de pago de PEMEX / CFE / SICT.</p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <select id="flujos-filter-status" onchange="renderFlujos()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none focus:border-emerald-500">
+          <option value="TODOS">Todos los estatus de flujo</option>
+          <option value="Por fondear">Por fondear</option>
+          <option value="Dispersado">Dispersado (Vigente)</option>
+          <option value="En gestión de cobro">En gestión de cobro (COPADE / Factura)</option>
+          <option value="Liquidado">Liquidado</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Tabla de Flujos -->
+    <section class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              <th class="py-3.5 px-4">Acreditado / Dependencia</th>
+              <th class="py-3.5 px-4">Línea / Monto Neto a Dispersar</th>
+              <th class="py-3.5 px-4">Cuenta CLABE / Fideicomiso</th>
+              <th class="py-3.5 px-4">Fecha Estimada Pago Dep.</th>
+              <th class="py-3.5 px-4">Estatus de Flujo</th>
+              <th class="py-3.5 px-4 text-right">Ficha</th>
+            </tr>
+          </thead>
+          <tbody id="flujos-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- PESTAÑA 3: ÁREA DE ESTRUCTURACIÓN (CONDICIONES FINANCIERAS Y AFOROS)  -->
+  <!-- ===================================================================== -->
+  <main id="tab-panel-estructuracion" class="area-panel hidden max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Lista izquierda de operaciones a estructurar -->
+      <div class="lg:col-span-4 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
+        <div class="p-4 border-b border-slate-200 bg-slate-50">
+          <h2 class="text-sm font-bold text-navy-900">Operaciones en Mesa</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Selecciona un prospecto para modelar su estructura financiera</p>
+        </div>
+        <div id="est-prospect-list" class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto"></div>
+      </div>
+
+      <!-- Panel derecho: Modelador y Condiciones de Crédito -->
+      <div class="lg:col-span-8 space-y-6">
+        <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5 sm:p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+            <div>
+              <span id="est-dep-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-900 text-white">PEMEX</span>
+              <h2 id="est-title" class="text-lg font-bold text-navy-900 mt-1">Selecciona una operación</h2>
+              <p id="est-subtitle" class="text-xs text-slate-500">Contrato / Producto</p>
+            </div>
+            <button onclick="saveStructuringTerms()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer self-start sm:self-center">
+              <i class="fa-solid fa-floppy-disk mr-1.5"></i>Guardar Estructura
+            </button>
+          </div>
+
+          <!-- Parámetros editables -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Valor Documento / Contrato (MXN)</label>
+              <input type="number" id="est-valor-doc" oninput="recalcStructuring()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-navy-900">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">% de Aforo Autorizado</label>
+              <div class="flex items-center gap-2">
+                <input type="number" id="est-aforo" min="10" max="100" step="1" oninput="recalcStructuring()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-navy-900">
+                <span class="text-xs font-bold text-slate-500">%</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Plazo Estimado (Días)</label>
+              <select id="est-plazo" onchange="recalcStructuring()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                <option value="30">30 días</option>
+                <option value="45">45 días</option>
+                <option value="60">60 días</option>
+                <option value="90">90 días</option>
+                <option value="120">120 días</option>
+                <option value="180">180 días</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Tasa Ordinaria Anual (%)</label>
+              <input type="number" id="est-tasa" step="0.5" oninput="recalcStructuring()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Comisión por Apertura / Disposición (%)</label>
+              <input type="number" id="est-comision" step="0.25" oninput="recalcStructuring()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Vehículo / Fuente de Pago</label>
+              <select id="est-vehiculo" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                <option value="Cesión de Derechos + Notificación">Cesión de Derechos + Notificación</option>
+                <option value="Fideicomiso de Administración y Fuente de Pago">Fideicomiso Fuente de Pago</option>
+                <option value="Mandato Irrevocable de Cobranza">Mandato Irrevocable de Cobranza</option>
+                <option value="Cuenta Concentradora SOFOM">Cuenta Concentradora SOFOM</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Resultado de la Corrida Financiera -->
+          <div class="mt-6 bg-slate-50 rounded-xl p-4 border border-slate-200/90 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <span class="text-[11px] font-medium text-slate-500 uppercase">Línea / Aforo Bruto</span>
+              <p id="est-res-bruto" class="text-base sm:text-lg font-bold text-navy-900 mt-0.5">$0</p>
+            </div>
+            <div>
+              <span class="text-[11px] font-medium text-slate-500 uppercase">Interés + Comisión Est.</span>
+              <p id="est-res-costo" class="text-base sm:text-lg font-bold text-amber-600 mt-0.5">$0</p>
+            </div>
+            <div>
+              <span class="text-[11px] font-medium text-slate-500 uppercase">Líquido a Dispersar</span>
+              <p id="est-res-neto" class="text-base sm:text-lg font-bold text-emerald-600 mt-0.5">$0</p>
+            </div>
+            <div>
+              <span class="text-[11px] font-medium text-slate-500 uppercase">Remanente al Liquidar</span>
+              <p id="est-res-remanente" class="text-base sm:text-lg font-bold text-slate-700 mt-0.5">$0</p>
+            </div>
+          </div>
+
+          <!-- Condicionantes de Estructuración -->
+          <div class="mt-5">
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Condicionantes de Estructuración / Garantías Adicionales</label>
+            <textarea id="est-notas" rows="3" placeholder="Ej. Obligado solidario del accionista mayoritario, ratificación de cesión en bóveda PEMEX previa al fondeo..."
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- PESTAÑA 4: ÁREA DE EAP (EVALUACIÓN Y ANÁLISIS DE PROYECTOS / RIESGOS) -->
+  <!-- ===================================================================== -->
+  <main id="tab-panel-eap" class="area-panel hidden max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h2 class="text-base font-bold text-navy-900">EAP · Evaluación Técnica, Operativa y de Riesgo Crediticio</h2>
+        <p class="text-xs text-slate-500">Dictamina la viabilidad técnica del contrato con la dependencia y la capacidad de ejecución del proveedor.</p>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold" id="eap-count-viable">0 Viables</span>
+        <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-semibold" id="eap-count-cond">0 Condicionados</span>
+        <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-semibold" id="eap-count-pend">0 En Revisión</span>
+      </div>
+    </div>
+
+    <div id="eap-cards-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <!-- Tarjetas de evaluación técnica por proyecto -->
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- PESTAÑA 5: ÁREA LEGAL (PLD/FT, DICTAMEN CORPORATIVO Y FORMALIZACIÓN)  -->
+  <!-- ===================================================================== -->
+  <main id="tab-panel-legal" class="area-panel hidden max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h2 class="text-base font-bold text-navy-900">Mesa Jurídica, Cumplimiento PLD/FT y Formalización</h2>
+        <p class="text-xs text-slate-500">Control de validación 69-B SAT, poderes notariales, contratos de crédito/factoraje y notificación de cesión.</p>
+      </div>
+      <div class="flex items-center gap-2 text-xs">
+        <span class="px-3 py-1.5 rounded-lg bg-navy-900 text-white font-semibold" id="legal-ready-count">0 Listos para firma / fondeo</span>
+      </div>
+    </div>
+
+    <section class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              <th class="py-3.5 px-4">Empresa / RFC</th>
+              <th class="py-3.5 px-3 text-center">Dictamen Corp. & Poderes</th>
+              <th class="py-3.5 px-3 text-center">Filtro PLD / Lista 69-B</th>
+              <th class="py-3.5 px-3 text-center">Contrato SOFOM Firmado</th>
+              <th class="py-3.5 px-3 text-center">Notificación Cesión Dep.</th>
+              <th class="py-3.5 px-4">Estatus Jurídico</th>
+              <th class="py-3.5 px-4 text-right">Detalle</th>
+            </tr>
+          </thead>
+          <tbody id="legal-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- BARRA DE PESTAÑAS FIJA EN LA PARTE INFERIOR (5 ÁREAS DEL PORTAL)      -->
+  <!-- ===================================================================== -->
+  <nav aria-label="Navegación por áreas" class="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_16px_rgba(15,23,42,0.06)] z-40">
+    <div class="max-w-[1600px] mx-auto px-2 sm:px-6 h-16 flex items-center justify-around sm:justify-center sm:gap-4 lg:gap-8">
+      
+      <button onclick="switchAreaTab('negocios')" id="nav-tab-negocios" class="area-tab-btn flex-1 sm:flex-initial sm:min-w-[145px] h-12 px-2 sm:px-4 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 text-xs font-bold bg-navy-900 text-white shadow-sm transition cursor-pointer">
+        <i class="fa-solid fa-briefcase text-sm text-emerald-400"></i>
+        <span>Negocios</span>
+        <span id="badge-tab-negocios" class="hidden md:inline-flex px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300">0</span>
+      </button>
+
+      <button onclick="switchAreaTab('flujos')" id="nav-tab-flujos" class="area-tab-btn flex-1 sm:flex-initial sm:min-w-[145px] h-12 px-2 sm:px-4 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer">
+        <i class="fa-solid fa-money-bill-trend-up text-sm"></i>
+        <span>Flujos</span>
+        <span id="badge-tab-flujos" class="hidden md:inline-flex px-1.5 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-700">0</span>
+      </button>
+
+      <button onclick="switchAreaTab('estructuracion')" id="nav-tab-estructuracion" class="area-tab-btn flex-1 sm:flex-initial sm:min-w-[145px] h-12 px-2 sm:px-4 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer">
+        <i class="fa-solid fa-calculator text-sm"></i>
+        <span>Estructuración</span>
+      </button>
+
+      <button onclick="switchAreaTab('eap')" id="nav-tab-eap" class="area-tab-btn flex-1 sm:flex-initial sm:min-w-[145px] h-12 px-2 sm:px-4 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer">
+        <i class="fa-solid fa-magnifying-glass-chart text-sm"></i>
+        <span>EAP</span>
+      </button>
+
+      <button onclick="switchAreaTab('legal')" id="nav-tab-legal" class="area-tab-btn flex-1 sm:flex-initial sm:min-w-[145px] h-12 px-2 sm:px-4 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer">
+        <i class="fa-solid fa-scale-balanced text-sm"></i>
+        <span>Legal</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- MODAL 1: CREAR NUEVO PROSPECTO -->
+  <div id="modal-new" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-modal my-auto">
+      <div class="bg-navy-900 text-white px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <i class="fa-solid fa-building-circle-check text-emerald-400"></i>
+          <h2 class="font-semibold text-base">Registrar Nuevo Prospecto / Operación</h2>
+        </div>
+        <button onclick="closeNewProspectModal()" class="text-slate-400 hover:text-white transition p-1 cursor-pointer">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="form-new-prospect" onsubmit="handleCreateProspect(event)" class="p-6 space-y-5 max-h-[82vh] overflow-y-auto">
+        <!-- Datos de la Empresa -->
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">1. Datos del Proveedor / Contratista</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-slate-700 mb-1">Razón Social *</label>
+              <input type="text" name="razonSocial" required placeholder="Ej. Constructora del Golfo S.A. de C.V."
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">RFC</label>
+              <input type="text" name="rfc" placeholder="CGO180512AB1" uppercase
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm uppercase focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos del Proyecto y Financiamiento -->
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">2. Fuente de Pago y Línea Solicitada</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Dependencia Pagadora *</label>
+              <select name="dependencia" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+                <option value="PEMEX">PEMEX (Exploración / Transformación)</option>
+                <option value="CFE">CFE (Distribución / Transmisión / Gen)</option>
+                <option value="SICT">SICT (Infraestructura / Carreteras)</option>
+                <option value="IMSS">IMSS / Sector Salud</option>
+                <option value="CONAGUA">CONAGUA / Obra Hidráulica</option>
+                <option value="OTRO">Otra Dependencia / Gobierno Estatal</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">No. de Contrato / Licitación / COPADE</label>
+              <input type="text" name="contrato" placeholder="Ej. 648223805 / COPADE-2026-09"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Producto Financiero *</label>
+              <select name="producto" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+                <option value="Factoraje COPADE / Contrarrecibo">Factoraje (COPADE / Contrarrecibo)</option>
+                <option value="Crédito Puente Contrato">Crédito Puente sobre Contrato</option>
+                <option value="Línea Revolvente Proveedores">Línea Revolvente Proveedores</option>
+                <option value="Arrendamiento Maquinaria">Arrendamiento Puro / Equipo</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Monto Solicitado (MXN) *</label>
+              <input type="number" name="monto" required min="50000" step="1000" placeholder="3500000"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Contacto Principal -->
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">3. Contacto Comercial / Decisor</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Nombre y Puesto *</label>
+              <input type="text" name="contactoNombre" required placeholder="Ing. Carlos Méndez (Dir. Finanzas)"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono / WhatsApp</label>
+              <input type="text" name="contactoTel" placeholder="993 123 4567"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Correo Electrónico</label>
+              <input type="email" name="contactoEmail" placeholder="cmendez@empresa.com.mx"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seguimiento Inicial -->
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">4. Etapa y Próximo Seguimiento</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Etapa Inicial</label>
+              <select name="etapa" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+                <option value="1">1. Contacto / Simulación</option>
+                <option value="2">2. Validación Contrato / COPADE</option>
+                <option value="3">3. Integración Expediente (KYC)</option>
+                <option value="4">4. Comité de Crédito</option>
+                <option value="5">5. Autorizado / Dispersado</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Prioridad</label>
+              <select name="prioridad" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+                <option value="Alta">Alta (Cierre próximo)</option>
+                <option value="Media" selected>Media (En proceso normal)</option>
+                <option value="Baja">Baja (Prospección temprana)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Fecha Próximo Seguimiento *</label>
+              <input type="date" name="fechaSeguimiento" id="new-fecha-seg" required
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+            </div>
+            <div class="sm:col-span-3">
+              <label class="block text-xs font-medium text-slate-700 mb-1">Próxima Acción / Nota Inicial *</label>
+              <input type="text" name="proximaAccion" required placeholder="Ej. Revisar carátula de contrato y solicitar opinión 32-D"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-3">
+          <button type="button" onclick="closeNewProspectModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-lg text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition cursor-pointer">
+            Guardar Prospecto
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL / DRAWER 2: DETALLE, EXPEDIENTE Y BITÁCORA DEL PROSPECTO -->
+  <div id="modal-detail" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 hidden justify-end">
+    <div class="bg-white w-full max-w-2xl h-full shadow-2xl flex flex-col overflow-hidden animate-modal">
+      <!-- Header del Drawer -->
+      <div class="bg-navy-900 text-white px-6 py-4 flex items-start justify-between gap-4 shrink-0">
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span id="det-badge-dep" class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">PEMEX</span>
+            <span id="det-rfc" class="text-xs font-mono text-slate-300">RFC</span>
+            <span id="det-badge-prio" class="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/20 text-amber-300">Prioridad Alta</span>
+          </div>
+          <h2 id="det-razon" class="font-bold text-lg sm:text-xl mt-1 leading-snug">Nombre de la Empresa</h2>
+          <p id="det-contrato" class="text-xs text-slate-400 mt-0.5">Contrato: ---</p>
+        </div>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition cursor-pointer">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Control Rápido de Etapa -->
+      <div class="bg-slate-50 border-b border-slate-200 px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <div class="flex items-center gap-2 flex-1">
+          <label class="text-xs font-semibold text-slate-600 shrink-0">Etapa:</label>
+          <select id="det-select-etapa" onchange="changeProspectStage(this.value)" class="w-full sm:w-auto flex-1 px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-navy-900 focus:outline-none focus:border-emerald-500">
+            <option value="1">1. Contacto / Simulación</option>
+            <option value="2">2. Validación Contrato / COPADE</option>
+            <option value="3">3. Integración Expediente (KYC)</option>
+            <option value="4">4. Comité de Crédito</option>
+            <option value="5">5. Autorizado / Dispersado</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="stepProspectStage(-1)" id="btn-prev-stage" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-xs font-medium text-slate-700 disabled:opacity-40 cursor-pointer" title="Retroceder etapa">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <button onclick="stepProspectStage(1)" id="btn-next-stage" class="px-3 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-850 text-white text-xs font-medium disabled:opacity-40 cursor-pointer flex items-center gap-1.5">
+            <span>Avanzar Etapa</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cuerpo Scrolleable del Detalle -->
+      <div class="p-6 overflow-y-auto flex-1 space-y-6">
+        
+        <!-- Resumen Financiero y Contacto Editable -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Operación</span>
+              <button onclick="toggleEditMode()" id="btn-toggle-edit" class="text-xs font-semibold text-emerald-700 hover:text-emerald-800 cursor-pointer">
+                <i class="fa-solid fa-pen-to-square mr-1"></i>Editar datos
+              </button>
+            </div>
+            
+            <!-- Vista lectura operación -->
+            <div id="det-info-read" class="space-y-2 text-sm">
+              <div>
+                <span class="text-xs text-slate-500 block">Monto Solicitado</span>
+                <span id="det-monto" class="text-lg font-bold text-navy-900">$0.00 MXN</span>
+              </div>
+              <div>
+                <span class="text-xs text-slate-500 block">Producto</span>
+                <span id="det-producto" class="font-medium text-slate-800">Factoraje</span>
+              </div>
+              <div>
+                <span class="text-xs text-slate-500 block">Próxima Acción y Fecha</span>
+                <p id="det-accion-fecha" class="font-medium text-slate-800 text-xs mt-0.5 bg-white p-2 rounded border border-slate-200"></p>
+              </div>
+            </div>
+
+            <!-- Vista edición rápida -->
+            <div id="det-info-edit" class="hidden space-y-2.5 text-xs">
+              <div>
+                <label class="block text-slate-600 font-medium mb-0.5">Monto (MXN)</label>
+                <input type="number" id="edit-monto" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white">
+              </div>
+              <div>
+                <label class="block text-slate-600 font-medium mb-0.5">No. Contrato / COPADE</label>
+                <input type="text" id="edit-contrato" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white">
+              </div>
+              <div>
+                <label class="block text-slate-600 font-medium mb-0.5">Prioridad</label>
+                <select id="edit-prioridad" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white">
+                  <option value="Alta">Alta</option>
+                  <option value="Media">Media</option>
+                  <option value="Baja">Baja</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-600 font-medium mb-0.5">Fecha Seguimiento</label>
+                <input type="date" id="edit-fecha" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white">
+              </div>
+              <div>
+                <label class="block text-slate-600 font-medium mb-0.5">Próxima Acción</label>
+                <input type="text" id="edit-accion" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white">
+              </div>
+              <div class="pt-1 flex justify-end gap-2">
+                <button onclick="toggleEditMode()" class="px-2.5 py-1 text-slate-600 hover:bg-slate-200 rounded cursor-pointer">Cancelar</button>
+                <button onclick="saveDetailEdits()" class="px-3 py-1 bg-emerald-600 text-white font-semibold rounded hover:bg-emerald-500 cursor-pointer">Guardar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tarjeta de Contacto Directo -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+            <div class="space-y-2.5">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block">Contacto Principal</span>
+              <div>
+                <p id="det-contacto-nombre" class="font-semibold text-sm text-slate-900">Nombre</p>
+                <p id="det-contacto-tel" class="text-xs text-slate-600 mt-1 flex items-center gap-1.5">
+                  <i class="fa-solid fa-phone text-slate-400"></i> <span>---</span>
+                </p>
+                <p id="det-contacto-email" class="text-xs text-slate-600 mt-1 flex items-center gap-1.5">
+                  <i class="fa-solid fa-envelope text-slate-400"></i> <span>---</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Botones rápidos de contacto -->
+            <div class="pt-4 mt-3 border-t border-slate-200 flex items-center gap-2">
+              <a id="btn-whatsapp" href="#" target="_blank" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                <span>WhatsApp</span>
+              </a>
+              <a id="btn-mailto" href="#" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold transition">
+                <i class="fa-regular fa-envelope"></i>
+                <span>Correo</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Checklist de Expediente SOFOM / KYC -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">Checklist de Expediente y Originación</h3>
+              <p class="text-[11px] text-slate-500">Marca los documentos recibidos y validados para Comité</p>
+            </div>
+            <span id="det-kyc-percent" class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">0%</span>
+          </div>
+          <!-- Barra de progreso -->
+          <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-3.5">
+            <div id="det-kyc-bar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <!-- Lista de documentos -->
+          <div id="det-checklist" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <!-- Checkboxes generados dinámicamente -->
+          </div>
+        </div>
+
+        <!-- Bitácora de Seguimiento -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">Bitácora de Seguimiento y Acuerdos</h3>
+          
+          <!-- Agregar nueva nota -->
+          <form onsubmit="handleAddNote(event)" class="space-y-2">
+            <textarea id="new-note-text" rows="2" required placeholder="Registra llamadas, estatus del COPADE, observaciones de riesgo o acuerdos con el cliente..."
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none resize-none"></textarea>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-slate-500">Actualizar próximo seguimiento:</span>
+                <input type="date" id="note-next-date" class="px-2 py-1 border border-slate-200 rounded text-xs text-slate-700">
+              </div>
+              <button type="submit" class="px-3.5 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-850 text-white text-xs font-semibold transition cursor-pointer">
+                <i class="fa-solid fa-plus mr-1"></i>Agregar Nota
+              </button>
+            </div>
+          </form>
+
+          <!-- Historial de notas -->
+          <div id="det-notes-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+            <!-- Notas generadas dinámicamente -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer del Drawer con opción de eliminar -->
+      <div class="bg-slate-50 border-t border-slate-200 px-6 py-3 flex items-center justify-between shrink-0">
+        <button onclick="deleteCurrentProspect()" class="text-xs font-medium text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-regular fa-trash-can"></i>
+          <span>Eliminar prospecto</span>
+        </button>
+        <button onclick="closeDetailModal()" class="px-4 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold transition cursor-pointer">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de Notificación -->
+  <div id="toast" class="fixed bottom-20 right-5 bg-navy-900 text-white px-4 py-3 rounded-xl shadow-lg border border-slate-700 text-xs font-medium flex items-center gap-2.5 translate-y-24 opacity-0 transition-all duration-300 z-50">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+    <span id="toast-msg">Acción realizada</span>
+  </div>
+
+  <!-- JAVASCRIPT DE LA APLICACIÓN -->
+  <script>
+    // --- CONFIGURACIÓN Y CONSTANTES ---
+    const STORAGE_KEY = 'sofom_crm_prospectos_v2';
+
+    const AREA_META = {
+      negocios: { title: 'Negocios', sub: 'Originación Comercial · PEMEX · CFE · SICT · IMSS' },
+      flujos: { title: 'Flujos', sub: 'Tesorería · Control de Dispersiones y Cobranza Dependencias' },
+      estructuracion: { title: 'Estructuración', sub: 'Modelado Financiero · Aforos, Tasas y Vehículos de Pago' },
+      eap: { title: 'EAP', sub: 'Evaluación y Análisis de Proyectos · Viabilidad Técnica y Riesgo' },
+      legal: { title: 'Legal', sub: 'Mesa Jurídica · Dictamen Corporativo, PLD/69-B y Cesiones' }
+    };
+
+    const STAGES = [
+// ... existing code ... -->
+        docs: { csf: true, op32d: true, contrato: true, edoCuenta: true, actaPoderes: true, buro: true },
+        notas: [
+          { fecha: 'Hace 1 día', texto: 'COPADE validado en portal Bóveda PEMEX sin deductivas pendientes.' },
+          { fecha: 'Hace 4 días', texto: 'Cliente envió estados de cuenta Banorte y opinión 32-D positiva.' }
+        ],
+        flujo: { estatus: 'Por fondear', clabe: '072 180 0045982134 1', fechaPagoDep: getRelativeDate(45) },
+        estructuracion: { aforo: 80, plazo: 45, tasa: 26.0, comision: 1.5, vehiculo: 'Cesión de Derechos + Notificación', notas: 'Cesión notificada en Bóveda PEMEX. Retención de aforo 20% al cobro.' },
+        eap: { dictamen: 'Viable', avanceObra: '85% ejecutado', checklist: { contratoValido: true, historialDep: true, capacidadOp: true, flujosSuficientes: true }, notas: 'Contratista tier-1 en región marina con 6 años de historial sin penalizaciones.' },
+        legal: { estatus: 'Listo para firma', checks: { dictamenCorp: true, pld69b: true, contratoFirmado: true, cesionNotificada: true } }
+      },
+      {
+        id: 'p-102',
+        razonSocial: 'Electrificación y Redes del Bajío S.A. de C.V.',
+        rfc: 'ERB170311PL9',
+        dependencia: 'CFE',
+        contrato: 'CFE-0100-CASAN-0042',
+        producto: 'Crédito Puente Contrato',
+        monto: 3200000,
+        contactoNombre: 'Lic. Mariana Villanueva (Admin)',
+        contactoTel: '477 718 3320',
+        contactoEmail: 'mvillanueva@redesbajio.mx',
+        etapa: '3',
+        prioridad: 'Alta',
+        fechaSeguimiento: getRelativeDate(-1), // Vencido ayer
+        proximaAccion: 'Dar seguimiento a descarga de Opinión 32-D actualizada y estados de cuenta',
+        docs: { csf: true, op32d: false, contrato: true, edoCuenta: false, actaPoderes: true, buro: true },
+        notas: [
+          { fecha: 'Hace 2 días', texto: 'Fallo de licitación CFE Distribución verificado. Falta actualizar 32-D del mes en curso.' }
+        ],
+        flujo: { estatus: 'Por fondear', clabe: '012 225 0019283746 5', fechaPagoDep: getRelativeDate(60) },
+        estructuracion: { aforo: 75, plazo: 60, tasa: 28.0, comision: 2.0, vehiculo: 'Mandato Irrevocable de Cobranza', notas: 'Ministraciones conforme a avance de instalación de subestaciones.' },
+        eap: { dictamen: 'Viable con condicionantes', avanceObra: '20% arranque', checklist: { contratoValido: true, historialDep: true, capacidadOp: true, flujosSuficientes: false }, notas: 'Condicionado a presentar orden de compra de transformadores.' },
+        legal: { estatus: 'En revisión', checks: { dictamenCorp: true, pld69b: true, contratoFirmado: false, cesionNotificada: false } }
+      },
+      {
+        id: 'p-103',
+        razonSocial: 'Infraestructura Vial y Carreteras del Centro S.A.',
+        rfc: 'IVC121105M81',
+        dependencia: 'SICT',
+        contrato: '2026-12-CE-A-019-W-00',
+        producto: 'Línea Revolvente Proveedores',
+        monto: 8500000,
+        contactoNombre: 'C.P. Fernando Mendoza (CFO)',
+        contactoTel: '55 4321 9900',
+        contactoEmail: 'fmendoza@ivcentro.com',
+        etapa: '2',
+        prioridad: 'Media',
+        fechaSeguimiento: getRelativeDate(2),
+        proximaAccion: 'Validar calendario de estimaciones de obra y anticipo con mesa de control',
+        docs: { csf: true, op32d: true, contrato: true, edoCuenta: false, actaPoderes: false, buro: false },
+        notas: [
+          { fecha: 'Hace 3 días', texto: 'Enviaron contrato firmado con SICT Centro Hidalgo para modernización de tramo carretero.' }
+        ],
+        flujo: { estatus: 'Por fondear', clabe: '002 180 7009123456 8', fechaPagoDep: getRelativeDate(90) },
+        estructuracion: { aforo: 70, plazo: 90, tasa: 27.5, comision: 2.0, vehiculo: 'Fideicomiso de Administración y Fuente de Pago', notas: 'Requiere apertura de cuenta concentradora en Fideicomiso.' },
+        eap: { dictamen: 'En revisión', avanceObra: '10% preliminar', checklist: { contratoValido: true, historialDep: false, capacidadOp: true, flujosSuficientes: false }, notas: 'Pendiente visita técnica a patio de maquinaria en Pachuca.' },
+        legal: { estatus: 'Pendiente docs', checks: { dictamenCorp: false, pld69b: true, contratoFirmado: false, cesionNotificada: false } }
+      },
+      {
+        id: 'p-104',
+        razonSocial: 'Suministros Médicos y Hospitalarios del Norte',
+        rfc: 'SMH190630QW2',
+        dependencia: 'IMSS',
+        contrato: 'LA-50-GYR-050GYR019-N-12',
+        producto: 'Factoraje COPADE / Contrarrecibo',
+        monto: 2150000,
+        contactoNombre: 'Dra. Patricia Gómez (Rep. Legal)',
+        contactoTel: '81 8340 1122',
+        contactoEmail: 'pgomez@sumediconorte.mx',
+        etapa: '5',
+        prioridad: 'Alta',
+        fechaSeguimiento: getRelativeDate(5),
+        proximaAccion: 'Confirmar recepción de primer contrarrecibo para segunda disposición',
+        docs: { csf: true, op32d: true, contrato: true, edoCuenta: true, actaPoderes: true, buro: true },
+        notas: [
+          { fecha: 'Hace 2 días', texto: 'Línea autorizada y primer fondeo dispersado por $1,720,000 MXN (aforo 80%).' }
+        ],
+        flujo: { estatus: 'En gestión de cobro', clabe: '014 580 6550192837 4', fechaPagoDep: getRelativeDate(18) },
+        estructuracion: { aforo: 80, plazo: 30, tasa: 25.0, comision: 1.5, vehiculo: 'Cesión de Derechos + Notificación', notas: 'Operación revolvente con contrarrecibos sellados por delegación IMSS.' },
+        eap: { dictamen: 'Viable', avanceObra: '100% entregado', checklist: { contratoValido: true, historialDep: true, capacidadOp: true, flujosSuficientes: true }, notas: 'Insumos médicos entregados y sellados de conformidad en almacén.' },
+        legal: { estatus: 'Formalizado', checks: { dictamenCorp: true, pld69b: true, contratoFirmado: true, cesionNotificada: true } }
+      },
+      {
+        id: 'p-105',
+        razonSocial: 'Mantenimiento Industrial Petroquímico del Sureste',
+        rfc: 'MIP200115KD7',
+        dependencia: 'PEMEX',
+        contrato: 'Por asignar (Licitación en curso)',
+        producto: 'Crédito Puente Contrato',
+        monto: 6000000,
+        contactoNombre: 'Ing. Héctor Domínguez',
+        contactoTel: '921 109 4455',
+        contactoEmail: 'hdominguez@mipsureste.com',
+        etapa: '1',
+        prioridad: 'Media',
+        fechaSeguimiento: getRelativeDate(1),
+        proximaAccion: 'Enviar corrida financiera con tasa preferencial y agendar llamada Zoom',
+        docs: { csf: true, op32d: false, contrato: false, edoCuenta: false, actaPoderes: false, buro: false },
+        notas: [
+          { fecha: 'Hoy', texto: 'Prospecto referido. Requiere capital de trabajo para arranque de mantenimiento en Dos Bocas.' }
+        ],
+        flujo: { estatus: 'Por fondear', clabe: 'Pendiente', fechaPagoDep: getRelativeDate(90) },
+        estructuracion: { aforo: 75, plazo: 60, tasa: 28.5, comision: 2.0, vehiculo: 'Cesión de Derechos + Notificación', notas: 'Sujeto a fallo de licitación PEMEX Refinación.' },
+        eap: { dictamen: 'En revisión', avanceObra: 'Por iniciar', checklist: { contratoValido: false, historialDep: false, capacidadOp: false, flujosSuficientes: false }, notas: 'En espera de fallo técnico.' },
+        legal: { estatus: 'Pendiente docs', checks: { dictamenCorp: false, pld69b: false, contratoFirmado: false, cesionNotificada: false } }
+      }
+    ];
+
+    // --- ESTADO GLOBAL ---
+    let prospects = [];
+    let activeAreaTab = 'negocios';
+    let currentView = 'kanban';
+    let currentDepFilter = 'TODAS';
+    let selectedProspectId = null;
+    let estSelectedId = null;
+
+    // --- INICIALIZACIÓN ---
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProspects();
+      // Poner fecha por defecto de mañana en el modal nuevo
+      document.getElementById('new-fecha-seg').value = getRelativeDate(1);
+      renderApp();
+    });
+
+    function loadProspects() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          prospects = JSON.parse(saved).map(ensureSubObjects);
+        } else {
+          prospects = JSON.parse(JSON.stringify(INITIAL_PROSPECTS));
+          saveProspects();
+        }
+      } catch (e) {
+        console.error('Error cargando localStorage:', e);
+        prospects = JSON.parse(JSON.stringify(INITIAL_PROSPECTS));
+      }
+    }
+
+    function ensureSubObjects(p) {
+      if (!p.flujo) p.flujo = { estatus: p.etapa === '5' ? 'Dispersado' : 'Por fondear', clabe: 'Pendiente', fechaPagoDep: getRelativeDate(45) };
+      if (!p.estructuracion) p.estructuracion = { aforo: 80, plazo: 60, tasa: 27.0, comision: 1.5, vehiculo: 'Cesión de Derechos + Notificación', notas: '' };
+      if (!p.eap) p.eap = { dictamen: 'En revisión', avanceObra: 'En evaluación', checklist: { contratoValido: false, historialDep: false, capacidadOp: false, flujosSuficientes: false }, notas: '' };
+      if (!p.legal) p.legal = { estatus: 'Pendiente docs', checks: { dictamenCorp: false, pld69b: false, contratoFirmado: false, cesionNotificada: false } };
+      return p;
+    }
+
+    function saveProspects() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(prospects));
+      } catch (e) {
+        console.error('Error guardando en localStorage:', e);
+      }
+    }
+
+    // --- CAMBIO ENTRE PESTAÑAS INFERIORES DE ÁREAS ---
+    function switchAreaTab(area) {
+      activeAreaTab = area;
+
+      // Actualizar paneles visibles
+      document.querySelectorAll('.area-panel').forEach(panel => panel.classList.add('hidden'));
+      const activePanel = document.getElementById(`tab-panel-${area}`);
+      if (activePanel) activePanel.classList.remove('hidden');
+
+      // Actualizar header superior contextual
+      const meta = AREA_META[area] || AREA_META.negocios;
+      document.getElementById('header-area-label').textContent = meta.title;
+      document.getElementById('header-area-sub').textContent = meta.sub;
+
+      // Actualizar botones de la barra inferior
+      document.querySelectorAll('.area-tab-btn').forEach(btn => {
+        btn.className = 'area-tab-btn flex-1 sm:flex-initial sm:min-w-[145px] h-12 px-2 sm:px-4 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer';
+        const icon = btn.querySelector('i');
+        if (icon) icon.classList.remove('text-emerald-400');
+      });
+
+      const activeBtn = document.getElementById(`nav-tab-${area}`);
+      if (activeBtn) {
+        activeBtn.className = 'area-tab-btn flex-1 sm:flex-initial sm:min-w-[145px] h-12 px-2 sm:px-4 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 text-xs font-bold bg-navy-900 text-white shadow-sm transition cursor-pointer';
+        const icon = activeBtn.querySelector('i');
+        if (icon) icon.classList.add('text-emerald-400');
+      }
+
+      renderApp();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Datos iniciales realistas del sector SOFOM Gobierno
+    const INITIAL_PROSPECTS = [
+      {
+        id: 'p-101',
+        razonSocial: 'Constructora e Ingeniería del Golfo S.A. de C.V.',
+        rfc: 'CIG140822HT4',
+        dependencia: 'PEMEX',
+        contrato: '648223805 · COPADE-014',
+        producto: 'Factoraje COPADE / Contrarrecibo',
+        monto: 4850000,
+        contactoNombre: 'Ing. Roberto Salazar (Dir. General)',
+        contactoTel: '993 214 8890',
+        contactoEmail: 'rsalazar@cigolfo.com.mx',
+        etapa: '4',
+        prioridad: 'Alta',
+        fechaSeguimiento: getRelativeDate(0), // Hoy
+        proximaAccion: 'Presentar dictamen de riesgo en sesión de Comité de las 16:00 hrs',
+        docs: { csf: true, op32d: true, contrato: true, edoCuenta: true, actaPoderes: true, buro: true },
+        notas: [
+          { fecha: 'Hace 1 día', texto: 'COPADE validado en portal Bóveda PEMEX sin deductivas pendientes.' },
+          { fecha: 'Hace 4 días', texto: 'Cliente envió estados de cuenta Banorte y opinión 32-D positiva.' }
+        ]
+      },
+      {
+        id: 'p-102',
+        razonSocial: 'Electrificación y Redes del Bajío S.A. de C.V.',
+        rfc: 'ERB170311PL9',
+        dependencia: 'CFE',
+        contrato: 'CFE-0100-CASAN-0042',
+        producto: 'Crédito Puente Contrato',
+        monto: 3200000,
+        contactoNombre: 'Lic. Mariana Villanueva (Admin)',
+        contactoTel: '477 718 3320',
+        contactoEmail: 'mvillanueva@redesbajio.mx',
+        etapa: '3',
+        prioridad: 'Alta',
+        fechaSeguimiento: getRelativeDate(-1), // Vencido ayer
+        proximaAccion: 'Dar seguimiento a descarga de Opinión 32-D actualizada y estados de cuenta',
+        docs: { csf: true, op32d: false, contrato: true, edoCuenta: false, actaPoderes: true, buro: true },
+        notas: [
+          { fecha: 'Hace 2 días', texto: 'Fallo de licitación CFE Distribución verificado. Falta actualizar 32-D del mes en curso.' }
+        ]
+      },
+      {
+        id: 'p-103',
+        razonSocial: 'Infraestructura Vial y Carreteras del Centro S.A.',
+        rfc: 'IVC121105M81',
+        dependencia: 'SICT',
+        contrato: '2026-12-CE-A-019-W-00',
+        producto: 'Línea Revolvente Proveedores',
+        monto: 8500000,
+        contactoNombre: 'C.P. Fernando Mendoza (CFO)',
+        contactoTel: '55 4321 9900',
+        contactoEmail: 'fmendoza@ivcentro.com',
+        etapa: '2',
+        prioridad: 'Media',
+        fechaSeguimiento: getRelativeDate(2),
+        proximaAccion: 'Validar calendario de estimaciones de obra y anticipo con mesa de control',
+        docs: { csf: true, op32d: true, contrato: true, edoCuenta: false, actaPoderes: false, buro: false },
+        notas: [
+          { fecha: 'Hace 3 días', texto: 'Enviaron contrato firmado con SICT Centro Hidalgo para modernización de tramo carretero.' }
+        ]
+      },
+      {
+        id: 'p-104',
+        razonSocial: 'Suministros Médicos y Hospitalarios del Norte',
+        rfc: 'SMH190630QW2',
+        dependencia: 'IMSS',
+        contrato: 'LA-50-GYR-050GYR019-N-12',
+        producto: 'Factoraje COPADE / Contrarrecibo',
+        monto: 2150000,
+        contactoNombre: 'Dra. Patricia Gómez (Rep. Legal)',
+        contactoTel: '81 8340 1122',
+        contactoEmail: 'pgomez@sumediconorte.mx',
+        etapa: '5',
+        prioridad: 'Alta',
+        fechaSeguimiento: getRelativeDate(5),
+        proximaAccion: 'Confirmar recepción de primer contrarrecibo para segunda disposición',
+        docs: { csf: true, op32d: true, contrato: true, edoCuenta: true, actaPoderes: true, buro: true },
+        notas: [
+          { fecha: 'Hace 2 días', texto: 'Línea autorizada y primer fondeo dispersado por $1,720,000 MXN (aforo 80%).' }
+        ]
+      },
+      {
+        id: 'p-105',
+        razonSocial: 'Mantenimiento Industrial Petroquímico del Sureste',
+        rfc: 'MIP200115KD7',
+        dependencia: 'PEMEX',
+        contrato: 'Por asignar (Licitación en curso)',
+        producto: 'Crédito Puente Contrato',
+        monto: 6000000,
+        contactoNombre: 'Ing. Héctor Domínguez',
+        contactoTel: '921 109 4455',
+        contactoEmail: 'hdominguez@mipsureste.com',
+        etapa: '1',
+        prioridad: 'Media',
+        fechaSeguimiento: getRelativeDate(1),
+        proximaAccion: 'Enviar corrida financiera con tasa preferencial y agendar llamada Zoom',
+        docs: { csf: true, op32d: false, contrato: false, edoCuenta: false, actaPoderes: false, buro: false },
+        notas: [
+          { fecha: 'Hoy', texto: 'Prospecto referido. Requiere capital de trabajo para arranque de mantenimiento en Dos Bocas.' }
+        ]
+      }
+    ];
+
+    // --- ESTADO GLOBAL ---
+    let prospects = [];
+    let currentView = 'kanban';
+    let currentDepFilter = 'TODAS';
+    let selectedProspectId = null;
+
+    // --- INICIALIZACIÓN ---
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProspects();
+      // Poner fecha por defecto de mañana en el modal nuevo
+      document.getElementById('new-fecha-seg').value = getRelativeDate(1);
+      renderApp();
+    });
+
+    function loadProspects() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          prospects = JSON.parse(saved);
+        } else {
+          prospects = JSON.parse(JSON.stringify(INITIAL_PROSPECTS));
+          saveProspects();
+        }
+      } catch (e) {
+        console.error('Error cargando localStorage:', e);
+        prospects = JSON.parse(JSON.stringify(INITIAL_PROSPECTS));
+      }
+    }
+
+    function saveProspects() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(prospects));
+      } catch (e) {
+        console.error('Error guardando en localStorage:', e);
+      }
+    }
+
+    function confirmResetData() {
+      // Usamos un banner de confirmación simple sin alert/confirm nativo
+      prospects = JSON.parse(JSON.stringify(INITIAL_PROSPECTS));
+      saveProspects();
+      renderApp();
+      showToast('Datos de ejemplo restaurados correctamente');
+    }
+
+    // --- UTILIDADES DE FORMATO ---
+    function formatCurrency(num) {
+      return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+        maximumFractionDigits: 0
+      }).format(num || 0);
+    }
+
+    function getDateStatus(dateStr) {
+      if (!dateStr) return { type: 'none', label: 'Sin fecha', badgeClass: 'bg-slate-100 text-slate-600' };
+      const todayStr = getRelativeDate(0);
+      if (dateStr < todayStr) {
+        return { type: 'overdue', label: `Vencido (${formatShortDate(dateStr)})`, badgeClass: 'bg-rose-100 text-rose-700 border border-rose-200 font-semibold' };
+      } else if (dateStr === todayStr) {
+        return { type: 'today', label: 'Hoy', badgeClass: 'bg-amber-100 text-amber-800 border border-amber-200 font-semibold' };
+      } else {
+        return { type: 'upcoming', label: formatShortDate(dateStr), badgeClass: 'bg-slate-100 text-slate-600' };
+      }
+    }
+
+    function formatShortDate(dateStr) {
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      return `${parseInt(parts[2], 10)} ${months[parseInt(parts[1], 10) - 1]}`;
+    }
+
+    function getDocProgress(docs) {
+      if (!docs) return 0;
+      const total = DOC_ITEMS.length;
+      const completed = DOC_ITEMS.filter(item => docs[item.key]).length;
+      return Math.round((completed / total) * 100);
+    }
+
+    function getDepBadgeColor(dep) {
+      switch (dep) {
+        case 'PEMEX': return 'bg-emerald-900 text-emerald-50';
+        case 'CFE': return 'bg-green-700 text-white';
+        case 'SICT': return 'bg-sky-800 text-white';
+        case 'IMSS': return 'bg-teal-700 text-white';
+        default: return 'bg-slate-700 text-white';
+      }
+    }
+
+    function getPriorityDot(prio) {
+      if (prio === 'Alta') return '<span class="inline-block w-2 h-2 rounded-full bg-rose-500" title="Prioridad Alta"></span>';
+      if (prio === 'Media') return '<span class="inline-block w-2 h-2 rounded-full bg-amber-400" title="Prioridad Media"></span>';
+      return '<span class="inline-block w-2 h-2 rounded-full bg-slate-300" title="Prioridad Baja"></span>';
+    }
+
+    // --- FILTRADO ---
+    function getFilteredProspects() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const onlyAlerts = document.getElementById('onlyAlertsCheck').checked;
+
+      return prospects.filter(p => {
+        // Filtro dependencia
+        if (currentDepFilter !== 'TODAS') {
+          if (currentDepFilter === 'OTRO') {
+            if (['PEMEX', 'CFE', 'SICT', 'IMSS'].includes(p.dependencia)) return false;
+          } else if (p.dependencia !== currentDepFilter) {
+            return false;
+          }
+        }
+
+        // Filtro alertas hoy/vencidas
+        if (onlyAlerts) {
+          const status = getDateStatus(p.fechaSeguimiento);
+          if (status.type !== 'overdue' && status.type !== 'today') return false;
+        }
+
+        // Filtro texto
+        if (query) {
+          const haystack = `${p.razonSocial} ${p.rfc} ${p.contrato} ${p.contactoNombre} ${p.dependencia}`.toLowerCase();
+          if (!haystack.includes(query)) return false;
+        }
+
+        return true;
+      });
+    }
+
+    // --- RENDERIZADO PRINCIPAL ---
+    function renderApp() {
+      updateKPIs();
+      updateTabBadges();
+      const filtered = getFilteredProspects();
+      renderKanban(filtered);
+      renderTable(filtered);
+      renderFlujos();
+      renderEstructuracion();
+      renderEAP();
+      renderLegal();
+    }
+
+    function updateTabBadges() {
+      const activos = prospects.filter(p => p.etapa !== '5').length;
+      const enFlujo = prospects.filter(p => ['4', '5'].includes(p.etapa)).length;
+      const bNeg = document.getElementById('badge-tab-negocios');
+      const bFlu = document.getElementById('badge-tab-flujos');
+      if (bNeg) bNeg.textContent = activos;
+      if (bFlu) bFlu.textContent = enFlujo;
+    }
+
+    function updateKPIs() {
+      // Calculamos sobre el total de la cartera real (no filtrada) para visión ejecutiva
+      const activos = prospects.filter(p => p.etapa !== '5');
+      const totalPipeline = activos.reduce((sum, p) => sum + Number(p.monto || 0), 0);
+
+      const enComite = prospects.filter(p => p.etapa === '4');
+      const totalComite = enComite.reduce((sum, p) => sum + Number(p.monto || 0), 0);
+
+      const dispersados = prospects.filter(p => p.etapa === '5');
+      const totalDispersado = dispersados.reduce((sum, p) => sum + Number(p.monto || 0), 0);
+
+      const alertas = activos.filter(p => {
+        const st = getDateStatus(p.fechaSeguimiento);
+        return st.type === 'overdue' || st.type === 'today';
+      });
+
+      document.getElementById('kpi-pipeline').textContent = formatCurrency(totalPipeline);
+      document.getElementById('kpi-pipeline-sub').textContent = `${activos.length} operaciones activas en proceso`;
+
+      document.getElementById('kpi-comite').textContent = formatCurrency(totalComite);
+      document.getElementById('kpi-comite-sub').textContent = `${enComite.length} expediente(s) en dictamen`;
+
+      document.getElementById('kpi-dispersado').textContent = formatCurrency(totalDispersado);
+      document.getElementById('kpi-dispersado-sub').textContent = `${dispersados.length} línea(s) colocadas`;
+
+      document.getElementById('kpi-alertas').textContent = alertas.length;
+      document.getElementById('kpi-alertas-sub').textContent = alertas.length === 1 ? '1 seguimiento pendiente hoy' : `${alertas.length} seguimientos para hoy o vencidos`;
+    }
+
+    function renderKanban(list) {
+      const board = document.getElementById('kanban-board');
+      board.innerHTML = '';
+
+      STAGES.forEach(stage => {
+        const stageItems = list.filter(p => p.etapa === stage.id);
+        const stageSum = stageItems.reduce((acc, p) => acc + Number(p.monto || 0), 0);
+
+        const col = document.createElement('div');
+        col.className = 'bg-slate-200/60 rounded-xl p-3 flex flex-col border border-slate-200/80 kanban-col';
+        
+        // Soporte básico Drag & Drop entre columnas
+        col.ondragover = (e) => { e.preventDefault(); col.classList.add('bg-emerald-50/70', 'border-emerald-300'); };
+        col.ondragleave = () => { col.classList.remove('bg-emerald-50/70', 'border-emerald-300'); };
+        col.ondrop = (e) => {
+          e.preventDefault();
+          col.classList.remove('bg-emerald-50/70', 'border-emerald-300');
+          const prospectId = e.dataTransfer.getData('text/plain');
+          if (prospectId) {
+            moveProspectStageById(prospectId, stage.id);
+          }
+        };
+
+        col.innerHTML = `
+          <div class="border-t-4 ${stage.color} bg-white rounded-lg p-3 shadow-xs mb-3">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="font-bold text-xs text-slate-800 leading-tight">${stage.title}</h3>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${stage.badge}">${stageItems.length}</span>
+            </div>
+            <p class="text-xs font-semibold text-slate-500 mt-1">${formatCurrency(stageSum)}</p>
+          </div>
+          <div class="space-y-2.5 flex-1" id="col-cards-${stage.id}"></div>
+        `;
+
+        board.appendChild(col);
+        const cardsContainer = col.querySelector(`#col-cards-${stage.id}`);
+
+        if (stageItems.length === 0) {
+          cardsContainer.innerHTML = `
+            <div class="border-2 border-dashed border-slate-300/70 rounded-lg p-4 text-center text-[11px] text-slate-400">
+              Sin prospectos en esta etapa
+            </div>
+          `;
+        } else {
+          stageItems.forEach(p => {
+            const kycPct = getDocProgress(p.docs);
+            const dateInfo = getDateStatus(p.fechaSeguimiento);
+
+            const card = document.createElement('div');
+            card.draggable = true;
+            card.ondragstart = (e) => {
+              e.dataTransfer.setData('text/plain', p.id);
+              card.classList.add('opacity-50');
+            };
+            card.ondragend = () => card.classList.remove('opacity-50');
+            card.onclick = () => openDetailModal(p.id);
+
+            card.className = 'bg-white rounded-xl p-3.5 shadow-xs border border-slate-200/90 hover:border-emerald-400 hover:shadow-md transition cursor-pointer group space-y-2.5';
+            card.innerHTML = `
+              <div class="flex items-start justify-between gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide ${getDepBadgeColor(p.dependencia)}">${p.dependencia}</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded ${dateInfo.badgeClass}">
+                    <i class="fa-regular fa-clock mr-0.5"></i>${dateInfo.label}
+                  </span>
+                  ${getPriorityDot(p.prioridad)}
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-emerald-700 transition line-clamp-2 leading-snug">${p.razonSocial}</h4>
+                <p class="text-[11px] text-slate-500 mt-0.5 truncate">${p.producto}</p>
+              </div>
+
+              <div class="flex items-baseline justify-between pt-1 border-t border-slate-100">
+                <span class="text-sm font-bold text-navy-900">${formatCurrency(p.monto)}</span>
+                <span class="text-[11px] font-medium text-slate-500">KYC: <strong class="${kycPct === 100 ? 'text-emerald-600' : 'text-slate-700'}">${kycPct}%</strong></span>
+              </div>
+
+              <!-- Mini barra progreso expediente -->
+              <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                <div class="${kycPct === 100 ? 'bg-emerald-500' : 'bg-navy-900'} h-full" style="width: ${kycPct}%"></div>
+              </div>
+
+              <div class="bg-slate-50 rounded-lg p-2 text-[11px] text-slate-600 line-clamp-2 border border-slate-100">
+                <span class="font-semibold text-slate-700">Siguiente:</span> ${p.proximaAccion}
+              </div>
+            `;
+            cardsContainer.appendChild(card);
+          });
+        }
+      });
+    }
+
+    function renderTable(list) {
+      const tbody = document.getElementById('table-body');
+      const emptyMsg = document.getElementById('table-empty');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+      emptyMsg.classList.add('hidden');
+
+      list.forEach(p => {
+        const stageObj = STAGES.find(s => s.id === p.etapa) || STAGES[0];
+        const kycPct = getDocProgress(p.docs);
+        const dateInfo = getDateStatus(p.fechaSeguimiento);
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/90 transition cursor-pointer';
+        tr.onclick = () => openDetailModal(p.id);
+
+        tr.innerHTML = `
+          <td class="py-3.5 px-4">
+            <div class="flex items-center gap-2">
+              ${getPriorityDot(p.prioridad)}
+              <div>
+                <p class="font-bold text-slate-900 text-xs sm:text-sm">${p.razonSocial}</p>
+                <p class="text-[11px] text-slate-500 font-mono">${p.rfc || 'Sin RFC'} · ${p.contactoNombre}</p>
+              </div>
+            </div>
+          </td>
+          <td class="py-3.5 px-4">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${getDepBadgeColor(p.dependencia)}">${p.dependencia}</span>
+            <p class="text-xs text-slate-600 mt-1 font-mono truncate max-w-[180px]">${p.contrato || '---'}</p>
+          </td>
+          <td class="py-3.5 px-4">
+            <p class="font-bold text-navy-900 text-sm">${formatCurrency(p.monto)}</p>
+            <p class="text-[11px] text-slate-500">${p.producto}</p>
+          </td>
+          <td class="py-3.5 px-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${stageObj.badge}">
+              ${stageObj.title}
+            </span>
+          </td>
+          <td class="py-3.5 px-4">
+            <div class="flex items-center gap-2">
+              <div class="w-16 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                <div class="${kycPct === 100 ? 'bg-emerald-500' : 'bg-navy-900'} h-full" style="width: ${kycPct}%"></div>
+              </div>
+              <span class="text-xs font-semibold text-slate-700">${kycPct}%</span>
+            </div>
+          </td>
+          <td class="py-3.5 px-4">
+            <span class="inline-block px-2 py-0.5 rounded text-[11px] ${dateInfo.badgeClass}">${dateInfo.label}</span>
+            <p class="text-xs text-slate-600 mt-1 line-clamp-1 max-w-[220px]">${p.proximaAccion}</p>
+          </td>
+          <td class="py-3.5 px-4 text-right">
+            <button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-emerald-600 hover:text-white text-slate-700 text-xs font-semibold transition">
+              Gestionar
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- CONTROLES DE VISTA Y FILTROS ---
+    function switchView(view) {
+      currentView = view;
+      const kanbanEl = document.getElementById('view-kanban');
+      const tableEl = document.getElementById('view-table');
+      const btnKanban = document.getElementById('btn-view-kanban');
+      const btnTable = document.getElementById('btn-view-table');
+
+      if (view === 'kanban') {
+        kanbanEl.classList.remove('hidden');
+        tableEl.classList.add('hidden');
+        btnKanban.className = 'px-3 py-1.5 rounded-md text-xs font-semibold bg-white text-navy-900 shadow-sm flex items-center gap-1.5 transition cursor-pointer';
+        btnTable.className = 'px-3 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition cursor-pointer';
+      } else {
+        kanbanEl.classList.add('hidden');
+        tableEl.classList.remove('hidden');
+        btnTable.className = 'px-3 py-1.5 rounded-md text-xs font-semibold bg-white text-navy-900 shadow-sm flex items-center gap-1.5 transition cursor-pointer';
+        btnKanban.className = 'px-3 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition cursor-pointer';
+      }
+    }
+
+    function setDepFilter(dep) {
+      currentDepFilter = dep;
+      document.querySelectorAll('.dep-btn').forEach(btn => {
+        if (btn.dataset.dep === dep) {
+          btn.className = 'dep-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-navy-900 text-white transition cursor-pointer shrink-0';
+        } else {
+          btn.className = 'dep-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer shrink-0';
+        }
+      });
+      renderApp();
+    }
+
+    // --- MODAL NUEVO PROSPECTO ---
+    function openNewProspectModal() {
+      document.getElementById('form-new-prospect').reset();
+      document.getElementById('new-fecha-seg').value = getRelativeDate(1);
+      const modal = document.getElementById('modal-new');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeNewProspectModal() {
+      const modal = document.getElementById('modal-new');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleCreateProspect(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+
+      const newP = ensureSubObjects({
+        id: 'p-' + Date.now(),
+        razonSocial: fd.get('razonSocial').trim(),
+        rfc: (fd.get('rfc') || '').trim().toUpperCase(),
+        dependencia: fd.get('dependencia'),
+        contrato: (fd.get('contrato') || 'Por definir').trim(),
+        producto: fd.get('producto'),
+        monto: Number(fd.get('monto') || 0),
+        contactoNombre: fd.get('contactoNombre').trim(),
+        contactoTel: (fd.get('contactoTel') || '').trim(),
+        contactoEmail: (fd.get('contactoEmail') || '').trim(),
+        etapa: fd.get('etapa'),
+        prioridad: fd.get('prioridad'),
+        fechaSeguimiento: fd.get('fechaSeguimiento'),
+        proximaAccion: fd.get('proximaAccion').trim(),
+        docs: { csf: false, op32d: false, contrato: false, edoCuenta: false, actaPoderes: false, buro: false },
+        notas: [
+          {
+            fecha: new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+            texto: `Prospecto registrado en pipeline. Acción inicial: ${fd.get('proximaAccion').trim()}`
+          }
+        ]
+      });
+
+      prospects.unshift(newP);
+      saveProspects();
+      closeNewProspectModal();
+      renderApp();
+      showToast('Prospecto agregado al pipeline');
+    }
+
+    // --- MODAL / DRAWER DETALLE ---
+    function openDetailModal(id) {
+      selectedProspectId = id;
+      const p = prospects.find(item => item.id === id);
+      if (!p) return;
+
+      // Resetear modo edición
+      document.getElementById('det-info-read').classList.remove('hidden');
+      document.getElementById('det-info-edit').classList.add('hidden');
+
+      // Poblar encabezado
+      document.getElementById('det-badge-dep').textContent = p.dependencia;
+      document.getElementById('det-rfc').textContent = p.rfc || 'RFC Pendiente';
+      document.getElementById('det-badge-prio').textContent = `Prioridad ${p.prioridad}`;
+      document.getElementById('det-razon').textContent = p.razonSocial;
+      document.getElementById('det-contrato').textContent = `Contrato / Ref: ${p.contrato || 'Sin especificar'}`;
+
+      // Selector de etapa y botones
+      document.getElementById('det-select-etapa').value = p.etapa;
+      document.getElementById('btn-prev-stage').disabled = (p.etapa === '1');
+      document.getElementById('btn-next-stage').disabled = (p.etapa === '5');
+
+      // Datos operación
+      document.getElementById('det-monto').textContent = `${formatCurrency(p.monto)} MXN`;
+      document.getElementById('det-producto').textContent = p.producto;
+      document.getElementById('det-accion-fecha').innerHTML = `
+        <span class="text-emerald-700 font-semibold">[${formatShortDate(p.fechaSeguimiento)}]</span> ${p.proximaAccion}
+      `;
+
+      // Contacto
+      document.getElementById('det-contacto-nombre').textContent = p.contactoNombre;
+      document.getElementById('det-contacto-tel').querySelector('span').textContent = p.contactoTel || 'No registrado';
+      document.getElementById('det-contacto-email').querySelector('span').textContent = p.contactoEmail || 'No registrado';
+
+      // Enlaces WhatsApp y Mail
+      const cleanPhone = (p.contactoTel || '').replace(/\D/g, '');
+      const waBtn = document.getElementById('btn-whatsapp');
+      if (cleanPhone.length >= 10) {
+        const phoneWithMX = cleanPhone.length === 10 ? `52${cleanPhone}` : cleanPhone;
+        const msg = encodeURIComponent(`Hola ${p.contactoNombre.split(' ')[0]}, te saludo respecto al seguimiento de financiamiento para ${p.razonSocial}.`);
+        waBtn.href = `https://wa.me/${phoneWithMX}?text=${msg}`;
+        waBtn.classList.remove('opacity-50', 'pointer-events-none');
+      } else {
+        waBtn.href = '#';
+        waBtn.classList.add('opacity-50', 'pointer-events-none');
+      }
+
+      const mailBtn = document.getElementById('btn-mailto');
+      if (p.contactoEmail) {
+        mailBtn.href = `mailto:${p.contactoEmail}?subject=${encodeURIComponent('Seguimiento Financiamiento - ' + p.razonSocial)}`;
+        mailBtn.classList.remove('opacity-50', 'pointer-events-none');
+      } else {
+        mailBtn.href = '#';
+        mailBtn.classList.add('opacity-50', 'pointer-events-none');
+      }
+
+      // Checklist KYC
+      renderDetailChecklist(p);
+
+      // Bitácora
+      document.getElementById('note-next-date').value = p.fechaSeguimiento || '';
+      renderDetailNotes(p);
+
+      const modal = document.getElementById('modal-detail');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeDetailModal() {
+      const modal = document.getElementById('modal-detail');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      selectedProspectId = null;
+    }
+
+    function renderDetailChecklist(p) {
+      const container = document.getElementById('det-checklist');
+      container.innerHTML = '';
+
+      DOC_ITEMS.forEach(doc => {
+        const checked = !!(p.docs && p.docs[doc.key]);
+        const label = document.createElement('label');
+        label.className = `flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition ${checked ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`;
+        label.innerHTML = `
+          <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleDocCheck('${doc.key}')" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+          <span class="font-medium leading-tight">${doc.label}</span>
+        `;
+        container.appendChild(label);
+      });
+
+      const pct = getDocProgress(p.docs);
+      document.getElementById('det-kyc-percent').textContent = `${pct}% completo`;
+      document.getElementById('det-kyc-bar').style.width = `${pct}%`;
+    }
+
+    function toggleDocCheck(docKey) {
+      const p = prospects.find(item => item.id === selectedProspectId);
+      if (!p) return;
+      if (!p.docs) p.docs = {};
+      p.docs[docKey] = !p.docs[docKey];
+      saveProspects();
+      renderDetailChecklist(p);
+      renderApp();
+    }
+
+    function renderDetailNotes(p) {
+      const list = document.getElementById('det-notes-list');
+      list.innerHTML = '';
+
+      if (!p.notas || p.notas.length === 0) {
+        list.innerHTML = '<p class="text-xs text-slate-400 italic">Aún no hay notas registradas en la bitácora.</p>';
+        return;
+      }
+
+      p.notas.forEach(n => {
+        const item = document.createElement('div');
+        item.className = 'bg-slate-50 border border-slate-200/80 rounded-lg p-3 text-xs';
+        item.innerHTML = `
+          <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+            <span class="font-semibold text-navy-900">Ejecutivo Comercial</span>
+            <span>${n.fecha}</span>
+          </div>
+          <p class="text-slate-700 leading-relaxed">${n.texto}</p>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function handleAddNote(e) {
+      e.preventDefault();
+      const p = prospects.find(item => item.id === selectedProspectId);
+      if (!p) return;
+
+      const textEl = document.getElementById('new-note-text');
+      const nextDateEl = document.getElementById('note-next-date');
+      const text = textEl.value.trim();
+      if (!text) return;
+
+      const nowStr = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+      if (!p.notas) p.notas = [];
+      p.notas.unshift({ fecha: nowStr, texto: text });
+
+      if (nextDateEl.value) {
+        p.fechaSeguimiento = nextDateEl.value;
+      }
+
+      textEl.value = '';
+      saveProspects();
+      openDetailModal(p.id); // Refresca vista detalle
+      renderApp();
+      showToast('Nota agregada a la bitácora');
+    }
+
+    function changeProspectStage(newStage) {
+      if (!selectedProspectId) return;
+      moveProspectStageById(selectedProspectId, newStage);
+      openDetailModal(selectedProspectId);
+    }
+
+    function stepProspectStage(delta) {
+      const p = prospects.find(item => item.id === selectedProspectId);
+      if (!p) return;
+      const next = Math.min(5, Math.max(1, parseInt(p.etapa, 10) + delta));
+      changeProspectStage(String(next));
+    }
+
+    function moveProspectStageById(id, newStage) {
+      const p = prospects.find(item => item.id === id);
+      if (!p || p.etapa === newStage) return;
+      const stageObj = STAGES.find(s => s.id === newStage);
+      p.etapa = newStage;
+      const nowStr = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+      p.notas.unshift({
+        fecha: nowStr,
+        texto: `Cambio de etapa a: ${stageObj ? stageObj.title : newStage}`
+      });
+      saveProspects();
+      renderApp();
+      showToast(`Movido a ${stageObj ? stageObj.short : 'nueva etapa'}`);
+    }
+
+    // --- EDICIÓN RÁPIDA EN DETALLE ---
+    function toggleEditMode() {
+      const p = prospects.find(item => item.id === selectedProspectId);
+      if (!p) return;
+
+      const readDiv = document.getElementById('det-info-read');
+      const editDiv = document.getElementById('det-info-edit');
+      const isEditing = !editDiv.classList.contains('hidden');
+
+      if (isEditing) {
+        readDiv.classList.remove('hidden');
+        editDiv.classList.add('hidden');
+      } else {
+        document.getElementById('edit-monto').value = p.monto;
+        document.getElementById('edit-contrato').value = p.contrato;
+        document.getElementById('edit-prioridad').value = p.prioridad;
+        document.getElementById('edit-fecha').value = p.fechaSeguimiento;
+        document.getElementById('edit-accion').value = p.proximaAccion;
+
+        readDiv.classList.add('hidden');
+        editDiv.classList.remove('hidden');
+      }
+    }
+
+    function saveDetailEdits() {
+      const p = prospects.find(item => item.id === selectedProspectId);
+      if (!p) return;
+
+      p.monto = Number(document.getElementById('edit-monto').value || p.monto);
+      p.contrato = document.getElementById('edit-contrato').value.trim();
+      p.prioridad = document.getElementById('edit-prioridad').value;
+      p.fechaSeguimiento = document.getElementById('edit-fecha').value;
+      p.proximaAccion = document.getElementById('edit-accion').value.trim();
+
+      saveProspects();
+      openDetailModal(p.id);
+      renderApp();
+      showToast('Datos actualizados');
+    }
+
+    function deleteCurrentProspect() {
+      if (!selectedProspectId) return;
+      prospects = prospects.filter(p => p.id !== selectedProspectId);
+      saveProspects();
+      closeDetailModal();
+      renderApp();
+      showToast('Prospecto eliminado');
+    }
+
+    // --- EXPORTAR CSV ---
+    function exportCSV() {
+      const headers = ['Razon Social', 'RFC', 'Dependencia', 'Contrato/COPADE', 'Producto', 'Monto MXN', 'Etapa', 'Avance KYC %', 'Estatus Flujo', 'Aforo %', 'Dictamen EAP', 'Estatus Legal', 'Prioridad', 'Fecha Seguimiento', 'Proxima Accion', 'Contacto', 'Telefono', 'Correo'];
+      const rows = prospects.map(p => {
+        const st = STAGES.find(s => s.id === p.etapa);
+        return [
+          `"${p.razonSocial.replace(/"/g, '""')}"`,
+          `"${p.rfc || ''}"`,
+          `"${p.dependencia}"`,
+          `"${(p.contrato || '').replace(/"/g, '""')}"`,
+          `"${p.producto}"`,
+          p.monto,
+          `"${st ? st.title : p.etapa}"`,
+          getDocProgress(p.docs),
+          `"${p.flujo?.estatus || ''}"`,
+          p.estructuracion?.aforo || 80,
+          `"${p.eap?.dictamen || ''}"`,
+          `"${p.legal?.estatus || ''}"`,
+          `"${p.prioridad}"`,
+          `"${p.fechaSeguimiento}"`,
+          `"${(p.proximaAccion || '').replace(/"/g, '""')}"`,
+          `"${p.contactoNombre}"`,
+          `"${p.contactoTel || ''}"`,
+          `"${p.contactoEmail || ''}"`
+        ].join(',');
+      });
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Portal_SOFOM_${getRelativeDate(0)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Reporte completo CSV descargado');
+    }
+
+    // =========================================================================
+    // MÓDULO 2: FLUJOS (TESORERÍA, DISPERSIONES Y COBRANZA)
+    // =========================================================================
+    function renderFlujos() {
+      const tbody = document.getElementById('flujos-table-body');
+      if (!tbody) return;
+
+      const filterSt = document.getElementById('flujos-filter-status')?.value || 'TODOS';
+      let sumFondear = 0, cntFondear = 0;
+      let sumActiva = 0;
+      let sumCobro = 0, cntCobro = 0;
+      let sumLiq = 0, cntLiq = 0;
+
+      prospects.forEach(p => {
+        const aforo = (p.estructuracion?.aforo || 80) / 100;
+        const montoNeto = Math.round(Number(p.monto || 0) * aforo);
+        const est = p.flujo?.estatus || 'Por fondear';
+
+        if (est === 'Por fondear') { sumFondear += montoNeto; cntFondear++; }
+        if (est === 'Dispersado' || est === 'En gestión de cobro') { sumActiva += montoNeto; }
+        if (est === 'En gestión de cobro') { sumCobro += Number(p.monto || 0); cntCobro++; }
+        if (est === 'Liquidado') { sumLiq += Number(p.monto || 0); cntLiq++; }
+      });
+
+      document.getElementById('flujos-kpi-fondear').textContent = formatCurrency(sumFondear);
+      document.getElementById('flujos-kpi-fondear-sub').textContent = `${cntFondear} operación(es) por dispersar`;
+      document.getElementById('flujos-kpi-activa').textContent = formatCurrency(sumActiva);
+      document.getElementById('flujos-kpi-cobro').textContent = formatCurrency(sumCobro);
+      document.getElementById('flujos-kpi-cobro-sub').textContent = `${cntCobro} COPADE / facturas en cobro`;
+      document.getElementById('flujos-kpi-liquidado').textContent = formatCurrency(sumLiq);
+      document.getElementById('flujos-kpi-liquidado-sub').textContent = `${cntLiq} operación(es) liquidadas`;
+
+      const list = prospects.filter(p => filterSt === 'TODOS' || (p.flujo?.estatus || 'Por fondear') === filterSt);
+      tbody.innerHTML = '';
+
+      list.forEach(p => {
+        const aforoPct = p.estructuracion?.aforo || 80;
+        const netoDispersar = Math.round(Number(p.monto || 0) * (aforoPct / 100));
+        const estatus = p.flujo?.estatus || 'Por fondear';
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition';
+        tr.innerHTML = `
+          <td class="py-3.5 px-4">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${getDepBadgeColor(p.dependencia)}">${p.dependencia}</span>
+              <div>
+                <p class="font-bold text-slate-900 text-xs sm:text-sm">${p.razonSocial}</p>
+                <p class="text-[11px] text-slate-500 font-mono">${p.contrato || 'Sin contrato'}</p>
+              </div>
+            </div>
+          </td>
+          <td class="py-3.5 px-4">
+            <p class="font-bold text-emerald-700 text-sm">${formatCurrency(netoDispersar)} <span class="text-[11px] font-normal text-slate-500">(${aforoPct}% aforo)</span></p>
+            <p class="text-[11px] text-slate-500">Valor doc: ${formatCurrency(p.monto)}</p>
+          </td>
+          <td class="py-3.5 px-4">
+            <input type="text" value="${p.flujo?.clabe || ''}" onchange="updateFlujoField('${p.id}', 'clabe', this.value)"
+              placeholder="CLABE 18 dígitos" class="px-2.5 py-1 border border-slate-200 rounded text-xs font-mono text-slate-700 w-44 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none">
+          </td>
+          <td class="py-3.5 px-4">
+            <input type="date" value="${p.flujo?.fechaPagoDep || ''}" onchange="updateFlujoField('${p.id}', 'fechaPagoDep', this.value)"
+              class="px-2.5 py-1 border border-slate-200 rounded text-xs text-slate-700 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none">
+          </td>
+          <td class="py-3.5 px-4">
+            <select onchange="updateFlujoField('${p.id}', 'estatus', this.value)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 bg-white focus:border-emerald-500 outline-none">
+              <option value="Por fondear" ${estatus === 'Por fondear' ? 'selected' : ''}>Por fondear</option>
+              <option value="Dispersado" ${estatus === 'Dispersado' ? 'selected' : ''}>Dispersado</option>
+              <option value="En gestión de cobro" ${estatus === 'En gestión de cobro' ? 'selected' : ''}>En gestión de cobro</option>
+              <option value="Liquidado" ${estatus === 'Liquidado' ? 'selected' : ''}>Liquidado</option>
+            </select>
+          </td>
+          <td class="py-3.5 px-4 text-right">
+            <button onclick="openDetailModal('${p.id}')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-navy-900 hover:text-white text-slate-700 text-xs font-semibold transition cursor-pointer">
+              Ver Ficha
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateFlujoField(id, field, value) {
+      const p = prospects.find(item => item.id === id);
+      if (!p) return;
+      if (!p.flujo) p.flujo = {};
+      p.flujo[field] = value;
+      saveProspects();
+      renderFlujos();
+      showToast('Flujo de tesorería actualizado');
+    }
+
+    // =========================================================================
+    // MÓDULO 3: ESTRUCTURACIÓN (MODELADOR DE AFOROS, TASAS Y VEHÍCULOS)
+    // =========================================================================
+    function renderEstructuracion() {
+      const listEl = document.getElementById('est-prospect-list');
+      if (!listEl || prospects.length === 0) return;
+
+      if (!estSelectedId || !prospects.some(p => p.id === estSelectedId)) {
+        estSelectedId = prospects[0].id;
+      }
+
+      listEl.innerHTML = '';
+      prospects.forEach(p => {
+        const isSel = p.id === estSelectedId;
+        const btn = document.createElement('button');
+        btn.onclick = () => { estSelectedId = p.id; renderEstructuracion(); };
+        btn.className = `w-full text-left p-3.5 transition cursor-pointer flex items-start justify-between gap-2 ${isSel ? 'bg-emerald-50/80 border-l-4 border-emerald-600' : 'hover:bg-slate-50'}`;
+        btn.innerHTML = `
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${getDepBadgeColor(p.dependencia)}">${p.dependencia}</span>
+              <span class="text-[11px] font-semibold text-slate-500">Aforo ${p.estructuracion?.aforo || 80}%</span>
+            </div>
+            <p class="font-bold text-xs text-slate-900 truncate mt-1">${p.razonSocial}</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">${formatCurrency(p.monto)} · ${p.estructuracion?.plazo || 60} días</p>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs ${isSel ? 'text-emerald-600' : 'text-slate-300'} mt-2"></i>
+        `;
+        listEl.appendChild(btn);
+      });
+
+      const current = prospects.find(p => p.id === estSelectedId);
+      if (!current) return;
+      const st = current.estructuracion || {};
+
+      document.getElementById('est-dep-badge').textContent = current.dependencia;
+      document.getElementById('est-title').textContent = current.razonSocial;
+      document.getElementById('est-subtitle').textContent = `${current.producto} · Contrato: ${current.contrato || 'Por definir'}`;
+
+      document.getElementById('est-valor-doc').value = current.monto;
+      document.getElementById('est-aforo').value = st.aforo ?? 80;
+      document.getElementById('est-plazo').value = String(st.plazo ?? 60);
+      document.getElementById('est-tasa').value = st.tasa ?? 27.0;
+      document.getElementById('est-comision').value = st.comision ?? 1.5;
+      document.getElementById('est-vehiculo').value = st.vehiculo || 'Cesión de Derechos + Notificación';
+      document.getElementById('est-notas').value = st.notas || '';
+
+      recalcStructuring();
+    }
+
+    function recalcStructuring() {
+      const valorDoc = Number(document.getElementById('est-valor-doc').value || 0);
+      const aforoPct = Number(document.getElementById('est-aforo').value || 80) / 100;
+      const plazoDias = Number(document.getElementById('est-plazo').value || 60);
+      const tasaAnual = Number(document.getElementById('est-tasa').value || 0) / 100;
+      const comisionPct = Number(document.getElementById('est-comision').value || 0) / 100;
+
+      const aforoBruto = valorDoc * aforoPct;
+      const interesEst = aforoBruto * (tasaAnual / 360) * plazoDias;
+      const comisionMonto = aforoBruto * comisionPct;
+      const costoTotal = interesEst + comisionMonto;
+      const liquidoDispersar = Math.max(0, aforoBruto - costoTotal);
+      const remanente = Math.max(0, valorDoc - aforoBruto);
+
+      document.getElementById('est-res-bruto').textContent = formatCurrency(aforoBruto);
+      document.getElementById('est-res-costo').textContent = formatCurrency(costoTotal);
+      document.getElementById('est-res-neto').textContent = formatCurrency(liquidoDispersar);
+      document.getElementById('est-res-remanente').textContent = formatCurrency(remanente);
+    }
+
+    function saveStructuringTerms() {
+      const p = prospects.find(item => item.id === estSelectedId);
+      if (!p) return;
+
+      p.monto = Number(document.getElementById('est-valor-doc').value || p.monto);
+      p.estructuracion = {
+        aforo: Number(document.getElementById('est-aforo').value || 80),
+        plazo: Number(document.getElementById('est-plazo').value || 60),
+        tasa: Number(document.getElementById('est-tasa').value || 27),
+        comision: Number(document.getElementById('est-comision').value || 1.5),
+        vehiculo: document.getElementById('est-vehiculo').value,
+        notas: document.getElementById('est-notas').value.trim()
+      };
+
+      saveProspects();
+      renderApp();
+      showToast('Estructura financiera guardada');
+    }
+
+    // =========================================================================
+    // MÓDULO 4: EAP (EVALUACIÓN Y ANÁLISIS DE PROYECTOS / RIESGO TÉCNICO)
+    // =========================================================================
+    function renderEAP() {
+      const grid = document.getElementById('eap-cards-grid');
+      if (!grid) return;
+
+      let cntViable = 0, cntCond = 0, cntPend = 0;
+      prospects.forEach(p => {
+        const d = p.eap?.dictamen || 'En revisión';
+        if (d === 'Viable') cntViable++;
+        else if (d === 'Viable con condicionantes') cntCond++;
+        else cntPend++;
+      });
+
+      document.getElementById('eap-count-viable').textContent = `${cntViable} Viables`;
+      document.getElementById('eap-count-cond').textContent = `${cntCond} Condicionados`;
+      document.getElementById('eap-count-pend').textContent = `${cntPend} En Revisión`;
+
+      grid.innerHTML = '';
+      const eapChecksMeta = [
+        { key: 'contratoValido', label: 'Contrato / Fallo / COPADE verificado en portal' },
+        { key: 'historialDep', label: 'Historial de cumplimiento con la dependencia' },
+        { key: 'capacidadOp', label: 'Capacidad técnica, plantilla y maquinaria' },
+        { key: 'flujosSuficientes', label: 'Estados financieros y buró de crédito sanos' }
+      ];
+
+      prospects.forEach(p => {
+        const eap = p.eap || { dictamen: 'En revisión', avanceObra: '', checklist: {}, notas: '' };
+        let badgeStyle = 'bg-slate-100 text-slate-700';
+        if (eap.dictamen === 'Viable') badgeStyle = 'bg-emerald-100 text-emerald-800';
+        if (eap.dictamen === 'Viable con condicionantes') badgeStyle = 'bg-amber-100 text-amber-800';
+        if (eap.dictamen === 'Rechazado') badgeStyle = 'bg-rose-100 text-rose-800';
+
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl border border-slate-200/90 shadow-sm p-5 flex flex-col justify-between space-y-4';
+
+        const checksHtml = eapChecksMeta.map(item => {
+          const isChecked = !!(eap.checklist && eap.checklist[item.key]);
+          return `
+            <label class="flex items-center gap-2 text-xs cursor-pointer p-1.5 rounded hover:bg-slate-50">
+              <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleEapCheck('${p.id}', '${item.key}')" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+              <span class="${isChecked ? 'text-slate-900 font-medium' : 'text-slate-600'}">${item.label}</span>
+            </label>
+          `;
+        }).join('');
+
+        card.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${getDepBadgeColor(p.dependencia)}">${p.dependencia}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${badgeStyle}">${eap.dictamen}</span>
+            </div>
+
+            <div>
+              <h3 class="font-bold text-sm text-navy-900 leading-snug">${p.razonSocial}</h3>
+              <p class="text-xs text-slate-500 mt-0.5">${formatCurrency(p.monto)} · ${p.contrato || 'Sin contrato'}</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Dictamen EAP</label>
+                <select onchange="updateEapField('${p.id}', 'dictamen', this.value)" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold bg-white">
+                  <option value="En revisión" ${eap.dictamen === 'En revisión' ? 'selected' : ''}>En revisión</option>
+                  <option value="Viable" ${eap.dictamen === 'Viable' ? 'selected' : ''}>Viable</option>
+                  <option value="Viable con condicionantes" ${eap.dictamen === 'Viable con condicionantes' ? 'selected' : ''}>Con condicionantes</option>
+                  <option value="Rechazado" ${eap.dictamen === 'Rechazado' ? 'selected' : ''}>Rechazado</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Avance Físico / Obra</label>
+                <input type="text" value="${eap.avanceObra || ''}" onchange="updateEapField('${p.id}', 'avanceObra', this.value)"
+                  placeholder="Ej. 60% ejecutado" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs">
+              </div>
+            </div>
+
+            <div class="border-t border-slate-100 pt-2 space-y-1">
+              ${checksHtml}
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-100 space-y-2">
+            <textarea rows="2" onchange="updateEapField('${p.id}', 'notas', this.value)" placeholder="Observaciones técnicas del analista EAP..."
+              class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:bg-white focus:border-emerald-500 outline-none resize-none">${eap.notas || ''}</textarea>
+            <div class="flex justify-end">
+              <button onclick="openDetailModal('${p.id}')" class="text-xs font-semibold text-emerald-700 hover:underline cursor-pointer">
+                Abrir expediente completo →
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function toggleEapCheck(id, key) {
+      const p = prospects.find(item => item.id === id);
+      if (!p) return;
+      if (!p.eap) p.eap = { checklist: {} };
+      if (!p.eap.checklist) p.eap.checklist = {};
+      p.eap.checklist[key] = !p.eap.checklist[key];
+      saveProspects();
+      renderEAP();
+    }
+
+    function updateEapField(id, field, val) {
+      const p = prospects.find(item => item.id === id);
+      if (!p) return;
+      if (!p.eap) p.eap = {};
+      p.eap[field] = val;
+      saveProspects();
+      renderEAP();
+      showToast('Evaluación EAP actualizada');
+    }
+
+    // =========================================================================
+    // MÓDULO 5: LEGAL (PLD/FT, DICTAMEN CORPORATIVO Y FORMALIZACIÓN)
+    // =========================================================================
+    function renderLegal() {
+      const tbody = document.getElementById('legal-table-body');
+      if (!tbody) return;
+
+      let readyCnt = 0;
+      prospects.forEach(p => {
+        const st = p.legal?.estatus || '';
+        if (st === 'Listo para firma' || st === 'Formalizado') readyCnt++;
+      });
+      document.getElementById('legal-ready-count').textContent = `${readyCnt} Listos / Formalizados`;
+
+      tbody.innerHTML = '';
+      prospects.forEach(p => {
+        const leg = p.legal || { estatus: 'Pendiente docs', checks: {} };
+        const ch = leg.checks || {};
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition';
+        tr.innerHTML = `
+          <td class="py-3.5 px-4">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${getDepBadgeColor(p.dependencia)}">${p.dependencia}</span>
+              <div>
+                <p class="font-bold text-slate-900 text-xs sm:text-sm">${p.razonSocial}</p>
+                <p class="text-[11px] text-slate-500 font-mono">${p.rfc || 'RFC Pendiente'} · ${formatCurrency(p.monto)}</p>
+              </div>
+            </div>
+          </td>
+          <td class="py-3.5 px-3 text-center">
+            <input type="checkbox" ${ch.dictamenCorp ? 'checked' : ''} onchange="toggleLegalCheck('${p.id}', 'dictamenCorp')" class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+          </td>
+          <td class="py-3.5 px-3 text-center">
+            <input type="checkbox" ${ch.pld69b ? 'checked' : ''} onchange="toggleLegalCheck('${p.id}', 'pld69b')" class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+          </td>
+          <td class="py-3.5 px-3 text-center">
+            <input type="checkbox" ${ch.contratoFirmado ? 'checked' : ''} onchange="toggleLegalCheck('${p.id}', 'contratoFirmado')" class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+          </td>
+          <td class="py-3.5 px-3 text-center">
+            <input type="checkbox" ${ch.cesionNotificada ? 'checked' : ''} onchange="toggleLegalCheck('${p.id}', 'cesionNotificada')" class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+          </td>
+          <td class="py-3.5 px-4">
+            <select onchange="updateLegalStatus('${p.id}', this.value)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 bg-white focus:border-emerald-500 outline-none">
+              <option value="Pendiente docs" ${leg.estatus === 'Pendiente docs' ? 'selected' : ''}>Pendiente docs</option>
+              <option value="En revisión" ${leg.estatus === 'En revisión' ? 'selected' : ''}>En revisión jurídica</option>
+              <option value="Listo para firma" ${leg.estatus === 'Listo para firma' ? 'selected' : ''}>Listo para firma</option>
+              <option value="Formalizado" ${leg.estatus === 'Formalizado' ? 'selected' : ''}>Formalizado / Ratificado</option>
+            </select>
+          </td>
+          <td class="py-3.5 px-4 text-right">
+            <button onclick="openDetailModal('${p.id}')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-navy-900 hover:text-white text-slate-700 text-xs font-semibold transition cursor-pointer">
+              Expediente
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleLegalCheck(id, key) {
+      const p = prospects.find(item => item.id === id);
+      if (!p) return;
+      if (!p.legal) p.legal = { checks: {} };
+      if (!p.legal.checks) p.legal.checks = {};
+      p.legal.checks[key] = !p.legal.checks[key];
+      saveProspects();
+      renderLegal();
+    }
+
+    function updateLegalStatus(id, val) {
+      const p = prospects.find(item => item.id === id);
+      if (!p) return;
+      if (!p.legal) p.legal = {};
+      p.legal.estatus = val;
+      saveProspects();
+      renderLegal();
+      showToast('Estatus legal actualizado');
+    }
+
+    // --- TOAST NOTIFICACIÓN ---
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 2800);
+    }
+  </script>
+</body>
+</html>
